@@ -1,0 +1,43 @@
+# Secrets and local environment files
+Installation md
+ts-plsql-oracle-forms-hrms/.git-source-backup/
+*.env
+!.env.example
+.apex_admin_pw
+*.pem
+*.key
+ords/config/
+ords/logs/
+oradata/
+
+# Oracle and runtime files
+*.dmp
+*.trc
+*.aud
+*.log
+*.pid
+
+# Local database/application exports that may contain credentials
+*.sql.bak
+*.zip
+*.tar.gz
+
+# IDE, OS and temporary files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Python/Node/build artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+node_modules/
+dist/
+build/
+
+# Local Spec Kit state already ignored by .specify/.gitignore
+.agents/*/local-config.yml
