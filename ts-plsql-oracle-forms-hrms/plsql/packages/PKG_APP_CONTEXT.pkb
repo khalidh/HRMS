@@ -162,7 +162,7 @@ CREATE OR REPLACE PACKAGE BODY HRMS.PKG_APP_CONTEXT AS
                              FROM HRMS.HRMS_EMPLOYEE_SCOPE_DELEGATIONS delegation
                             WHERE delegation.delegate_emp_id = :delegate_employee_id
                               AND delegation.active_flag = 'Y'
-                              AND (delegation.valid_from IS NULL OR delegation.valid_from <= SYSDATE)
+                              AND delegation.valid_from <= SYSDATE
                               AND (delegation.valid_to IS NULL OR delegation.valid_to > SYSDATE)
                        )
                    CONNECT BY NOCYCLE PRIOR employee.emp_id = employee.manager_emp_id
