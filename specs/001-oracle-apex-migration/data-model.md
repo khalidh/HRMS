@@ -36,6 +36,8 @@
 
 Table technique pour suivre les traitements longs et idempotents : `BATCH_EXECUTION_ID`, `EXECUTION_TYPE`, `REFERENCE_KEY`, `IDEMPOTENCY_KEY`, `EXECUTION_STATUS`, dates de début/fin, compteurs, résumé d’erreur, demandeur et dates d’audit. La clé d’idempotence est unique ; une reprise réutilise la même ligne et incrémente le compteur de tentatives. Les statuts sont `PENDING`, `RUNNING`, `SUCCEEDED`, `FAILED` et `CANCELLED`.
 
+Les séquences `SEQ_BATCH_EXECUTION` et `SEQ_MIGRATION_RECONCILIATION` génèrent les clés primaires dans `hrms_operational_sequences.sql`. Le script vérifie aussi que les contraintes créées avec les tables sont présentes et activées.
+
 Règles : une clé d’idempotence ne peut être consommée deux fois avec succès ; les transitions sont monotones sauf reprise explicitement autorisée ; chaque échec conserve son code et un résumé assaini, sans secret ni donnée RH sensible.
 
 ### `HRMS.MIGRATION_RECONCILIATIONS`
