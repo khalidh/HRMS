@@ -44,6 +44,10 @@ Règles : une clé d’idempotence ne peut être consommée deux fois avec succ�
 
 Table de contrôle par objet et lot de migration, liée à `BATCH_EXECUTIONS` : source, cible, volumes, écarts de clés, comparaisons d’agrégats JSON, statut, anomalie assainie et validation. L’unicité du lot et de l’objet rend l’écriture idempotente ; les données sensibles ne doivent pas être recopiées dans les résumés.
 
+### Identity and delegated employee scope
+
+`HRMS_USER_IDENTITIES` maps one stable OIDC subject (`SSO_SUBJECT`, configured as the APEX username) to an `EMP_ID`, with `ACTIVE_FLAG`, `VALID_FROM` and `VALID_TO`. `HRMS_EMPLOYEE_SCOPE_DELEGATIONS` stores time-bounded manager scope with `DELEGATOR_EMP_ID`, `DELEGATE_EMP_ID`, `ACTIVE_FLAG`, `VALID_FROM` and `VALID_TO`. T010 creates these security tables; `PKG_APP_CONTEXT` fails closed when the identity mapping is absent or ambiguous.
+
 ## États métier à préserver
 
 - Employé : `ACTIVE`, `ON_LEAVE`, `SUSPENDED`, `TERMINATED`.

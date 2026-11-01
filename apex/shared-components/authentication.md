@@ -16,13 +16,15 @@ The identity provider and its issuer/discovery URL have not yet been provided. C
 
 | Logical claim | OIDC claim | Requirement |
 |---|---|---|
-| Stable identity | `sub` | Required; map to an existing HRMS identity, never use display name as a key. |
+| Stable identity | `sub` | Required; configure this claim as the APEX username and map it to an existing HRMS identity. Never use display name as a key. |
 | Username | `preferred_username` | Required for audit and display. |
 | Email | `email` | Required for notifications and account lookup. |
 | Full name | `name` | Optional; display only. |
 | Groups / roles | Provider-specific claim | Recommended for initial role mapping; HRMS authorization is still enforced server-side. |
 
-Confirm the provider's actual claim names and whether `sub` remains stable for the application's client registration before enabling login.
+The HRMS database maps the APEX username (the OIDC `sub`) to an employee through `HRMS_USER_IDENTITIES`; username/email claims are attributes, not employee keys. Confirm the provider's issuer and that `sub` remains stable for the application's client registration before enabling login.
+
+The security schema must also include `HRMS_EMPLOYEE_SCOPE_DELEGATIONS` for time-bounded manager delegations. Configure a Page 0 process to call `HRMS.PKG_APP_CONTEXT.INITIALIZE_CONTEXT` on each authenticated request; secured packages must fail closed if the current APEX user/session has not been initialized.
 
 ## Secret handling and release gate
 
