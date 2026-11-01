@@ -44,6 +44,10 @@ Règles : une clé d’idempotence ne peut être consommée deux fois avec succ�
 
 Table de contrôle par objet et lot de migration, liée à `BATCH_EXECUTIONS` : source, cible, volumes, écarts de clés, comparaisons d’agrégats JSON, statut, anomalie assainie et validation. L’unicité du lot et de l’objet rend l’écriture idempotente ; les données sensibles ne doivent pas être recopiées dans les résumés.
 
+### `HRMS.AUDIT_LOG`
+
+Le journal conserve l’utilisateur legacy, l’identité OIDC (`SSO_SUBJECT`), la session APEX, la session base de données et l’adresse observée par la passerelle web. `PKG_AUDIT` privilégie l’identité et la session du contexte APEX initialisé plutôt qu’un utilisateur fourni par l’appelant; hors APEX, les appels Forms historiques restent compatibles. La migration `07_audit_context.sql` étend les colonnes et autorise explicitement les événements d’export, de refus/échec d’export, de consultation sensible et d’autorisation. Les export logs ne contiennent que des métadonnées assainies, jamais les lignes exportées, tokens ou filtres sensibles.
+
 ### Identity and delegated employee scope
 
 `HRMS_USER_IDENTITIES` maps one stable OIDC subject (`SSO_SUBJECT`, configured as the APEX username) to an `EMP_ID`, with `ACTIVE_FLAG`, `VALID_FROM` and `VALID_TO`. `HRMS_EMPLOYEE_SCOPE_DELEGATIONS` stores time-bounded manager scope with `DELEGATOR_EMP_ID`, `DELEGATE_EMP_ID`, `ACTIVE_FLAG`, `VALID_FROM` and `VALID_TO`. T010 creates these security tables; `PKG_APP_CONTEXT` fails closed when the identity mapping is absent or ambiguous.

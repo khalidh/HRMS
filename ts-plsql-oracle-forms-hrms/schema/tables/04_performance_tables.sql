@@ -93,16 +93,30 @@ CREATE TABLE HRMS.AUDIT_LOG (
     AUDIT_ID             NUMBER(15)      NOT NULL,
     TABLE_NAME           VARCHAR2(60)    NOT NULL,
     RECORD_ID            NUMBER(15)      NOT NULL,
-    ACTION_TYPE          VARCHAR2(10)    NOT NULL,
+    ACTION_TYPE          VARCHAR2(20)    NOT NULL,
     OLD_VALUES           CLOB,
     NEW_VALUES           CLOB,
-    CHANGED_BY           VARCHAR2(30)    NOT NULL,
+    CHANGED_BY           VARCHAR2(255)   NOT NULL,
     CHANGED_DATE         DATE            DEFAULT SYSDATE NOT NULL,
     IP_ADDRESS           VARCHAR2(50),
     SESSION_ID           VARCHAR2(100),
+    SSO_SUBJECT          VARCHAR2(255),
+    APEX_SESSION_ID      NUMBER(20),
+    CLIENT_IP_ADDRESS    VARCHAR2(50),
     CONSTRAINT PK_AUDIT_LOG PRIMARY KEY (AUDIT_ID),
-    CONSTRAINT CHK_AUDIT_ACTION CHECK (ACTION_TYPE IN ('INSERT', 'UPDATE', 'DELETE'))
+    CONSTRAINT CHK_AUDIT_ACTION CHECK (ACTION_TYPE IN (
+        'INSERT', 'UPDATE', 'DELETE', 'STATUS_CHANGE', 'EXPORT',
+        'EXPORT_DENIED', 'EXPORT_FAILED', 'SENSITIVE_READ', 'AUTHZ_CHANGE',
+        'LOGIN', 'LOGOUT', 'PURGE'
+    ))
 );
+
+COMMENT ON COLUMN HRMS.AUDIT_LOG.SSO_SUBJECT IS
+    'Authenticated OIDC subject from the initialized APEX context; null for legacy non-APEX calls.';
+COMMENT ON COLUMN HRMS.AUDIT_LOG.APEX_SESSION_ID IS
+    'Authenticated APEX session ID; SESSION_ID continues to store the database session identifier.';
+COMMENT ON COLUMN HRMS.AUDIT_LOG.CLIENT_IP_ADDRESS IS
+    'Client address observed by the web gateway; forwarded headers are not trusted by the audit package.';
 
 -- ----------------------------------------------------------------------------
 -- SYSTEM_PARAMETERS (configuration)
