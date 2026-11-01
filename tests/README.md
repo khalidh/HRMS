@@ -18,8 +18,8 @@
 ## Commandes
 
 ```bash
-# Installer le schéma et compiler les packages
-sql -S "$HRMS_DB_CONNECT" @ts-plsql-oracle-forms-hrms/data/migration/00_install_test.sql
+# Installer dans un schéma HRMS neuf et isolé (refus si le schéma contient déjà un objet)
+sql -S "$HRMS_DB_CONNECT" @ts-plsql-oracle-forms-hrms/data/migration/00_install_test.sql INSTALL_EMPTY_HRMS_TEST_SCHEMA
 
 # Contrôles de schéma
 sql -S "$HRMS_DB_CONNECT" @tests/sql/foundation_schema.sql
@@ -29,6 +29,8 @@ sql -S "$HRMS_DB_CONNECT" <<'SQL'
 exec ut.run('HRMS');
 SQL
 ```
+
+`00_install_test.sql` crée et compile le schéma, mais ne charge pas les scripts existants de `data/seed/`. Avant d'utiliser ces données, vérifiez leur anonymisation et leur compatibilité avec le DDL; le jeu de fixtures de référence reste à fournir.
 
 ## Organisation
 

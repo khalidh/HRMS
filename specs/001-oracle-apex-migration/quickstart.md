@@ -28,11 +28,12 @@ Résultat attendu : tous les artefacts de conception sont présents et aucun sec
 Utiliser la procédure de déploiement versionnée avec un compte de service limité. Dans l’environnement local fourni par le projet, la connexion peut être exécutée depuis le conteneur Oracle ; ne pas recopier de mot de passe dans une commande ou un fichier versionné.
 
 ```bash
-docker exec -i oracle26ai sqlplus -L "$HRMS_CONNECT_STRING" \
-  < ts-plsql-oracle-forms-hrms/data/migration/00_install_test.sql
+sql -S "$HRMS_DB_CONNECT" \
+  @ts-plsql-oracle-forms-hrms/data/migration/00_install_test.sql \
+  INSTALL_EMPTY_HRMS_TEST_SCHEMA
 ```
 
-`HRMS_CONNECT_STRING` doit être fourni par le gestionnaire de secrets ou la session locale et ne doit pas être écrit dans le dépôt. Résultats attendus : contraintes valides, packages compilés, vues accessibles, jobs désactivés par défaut en test et données anonymisées chargées.
+`HRMS_DB_CONNECT` doit être fourni par le gestionnaire de secrets ou la session locale et ne doit pas être écrit dans le dépôt. Utiliser une base de test isolée avec un schéma HRMS vide : le script refuse un schéma déjà peuplé et ne charge pas les anciens scripts de seed. Résultats attendus : contraintes valides, packages compilés, vues accessibles et jobs désactivés par défaut en test. Les fixtures anonymisées ne seront chargées qu'après vérification de leur provenance et de leur compatibilité avec le schéma.
 
 ## 3. Déployer l’application APEX
 

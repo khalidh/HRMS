@@ -1,0 +1,123 @@
+-- Create the generic JSON landing table, then verify the requested job is RUNNING.
+-- Start an execution with PKG_BATCH before invoking:
+--   @01_staging.sql <BATCH_EXECUTION_ID>
+
+SET SERVEROUTPUT ON
+SET DEFINE ON
+WHENEVER SQLERROR EXIT SQL.SQLCODE ROLLBACK
+
+VARIABLE migration_batch_id NUMBER
+
+DECLARE
+    c_batch_execution_id CONSTANT NUMBER := TO_NUMBER('&&1');
+BEGIN
+    IF c_batch_execution_id <= 0 OR c_batch_execution_id != TRUNC(c_batch_execution_id) THEN
+        RAISE_APPLICATION_ERROR(-20211, 'A positive integer batch execution ID is required.');
+    END IF;
+
+    :migration_batch_id := c_batch_execution_id;
+END;
+/
+
+DECLARE
+    v_execution_status HRMS.BATCH_EXECUTIONS.EXECUTION_STATUS%TYPE;
+BEGIN
+    SELECT batch_execution.EXECUTION_STATUS
+      INTO v_execution_status
+      FROM HRMS.BATCH_EXECUTIONS batch_execution
+     WHERE batch_execution.BATCH_EXECUTION_ID = :migration_batch_id;
+
+    IF v_execution_status != 'RUNNING' THEN
+        RAISE_APPLICATION_ERROR(-20212, 'Staging requires a RUNNING batch execution.');
+    END IF;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20213, 'Batch execution does not exist.');
+END;
+/
+
+DECLARE
+BEGIN
+    EXECUTE IMMEDIATE q'[
+        CREATE TABLE HRMS.MIGRATION_STAGING_ROWS (
+            STAGING_ROW_ID NUMBER(15)
+                CONSTRAINT MIG_STAGING_ROW_ID_NN NOT NULL,
+            BATCH_EXECUTION_ID NUMBER(15)
+                CONSTRAINT MIG_STAGING_BATCH_ID_NN NOT NULL,
+            SOURCE_OBJECT_NAME VARCHAR2(128)
+                CONSTRAINT MIG_STAGING_SOURCE_OBJ_NN NOT NULL,
+            SOURCE_RECORD_KEY VARCHAR2(200)
+                CONSTRAINT MIG_STAGING_SOURCE_KEY_NN NOT NULL,
+            SOURCE_PAYLOAD CLOB
+                CONSTRAINT MIG_STAGING_PAYLOAD_NN NOT NULL,
+            STAGING_STATUS VARCHAR2(20) DEFAULT 'PENDING'
+                CONSTRAINT MIG_STAGING_STATUS_NN NOT NULL,
+            VALIDATION_ERROR_CODE VARCHAR2(100),
+            STAGED_AT TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP
+                CONSTRAINT MIG_STAGING_STAGED_AT_NN NOT NULL,
+            VALIDATED_AT TIMESTAMP WITH TIME ZONE,
+            CONSTRAINT MIGRATION_STAGING_ROWS_PK PRIMARY KEY (STAGING_ROW_ID),
+            CONSTRAINT MIGRATION_STAGING_ROWS_BATCH_FK
+                FOREIGN KEY (BATCH_EXECUTION_ID)
+                REFERENCES HRMS.BATCH_EXECUTIONS (BATCH_EXECUTION_ID),
+            CONSTRAINT MIGRATION_STAGING_ROWS_SOURCE_UQ
+                UNIQUE (BATCH_EXECUTION_ID, SOURCE_OBJECT_NAME, SOURCE_RECORD_KEY),
+            CONSTRAINT MIGRATION_STAGING_ROWS_STATUS_CK
+                CHECK (STAGING_STATUS IN ('PENDING', 'VALID', 'REJECTED')),
+            CONSTRAINT MIGRATION_STAGING_ROWS_JSON_CK
+                CHECK (SOURCE_PAYLOAD IS JSON),
+            CONSTRAINT MIGRATION_STAGING_ROWS_ERROR_CK
+                CHECK (
+                    (STAGING_STATUS = 'REJECTED' AND VALIDATION_ERROR_CODE IS NOT NULL)
+                    OR (STAGING_STATUS != 'REJECTED' AND VALIDATION_ERROR_CODE IS NULL)
+                )
+        )
+    ]';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 THEN
+            RAISE;
+        END IF;
+END;
+/
+
+DECLARE
+BEGIN
+    EXECUTE IMMEDIATE q'[
+        CREATE SEQUENCE HRMS.SEQ_MIGRATION_STAGING_ROW
+            START WITH 1 INCREMENT BY 1 MINVALUE 1
+            MAXVALUE 999999999999999 CACHE 100 NOCYCLE
+    ]';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 THEN
+            RAISE;
+        END IF;
+END;
+/
+
+DECLARE
+BEGIN
+    EXECUTE IMMEDIATE
+        'CREATE INDEX HRMS.MIGRATION_STAGING_ROWS_BATCH_IX ON HRMS.MIGRATION_STAGING_ROWS (BATCH_EXECUTION_ID, STAGING_STATUS)';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 THEN
+            RAISE;
+        END IF;
+END;
+/
+
+BEGIN
+    DBMS_OUTPUT.PUT_LINE(
+        'PASS: migration staging table is ready for batch ' || :migration_batch_id || '.'
+    );
+END;
+/
+
+COMMENT ON TABLE HRMS.MIGRATION_STAGING_ROWS IS
+    'Generic JSON landing area for migration rows; source payloads require approved handling and retention.';
+COMMENT ON COLUMN HRMS.MIGRATION_STAGING_ROWS.SOURCE_PAYLOAD IS
+    'One source record as JSON; never load credentials or unapproved sensitive data.';
+
+EXIT SUCCESS

@@ -4,7 +4,7 @@
 
 - Aucune donnée personnelle réelle : noms, emails, salaires, identifiants nationaux et coordonnées bancaires sont fictifs.
 - Les identifiants de référence (`EMPLOYEE_ID`, `DEPARTMENT_ID`, etc.) sont conservés pour permettre le rapprochement Forms/APEX.
-- Les données de base viennent de `ts-plsql-oracle-forms-hrms/data/seed/`.
+- Le jeu de données anonymisé et les clés de référence doivent être validés avant leur chargement. Les scripts actuellement présents dans `ts-plsql-oracle-forms-hrms/data/seed/` ne sont pas inclus par l'installation de test et doivent être vérifiés pour leur compatibilité avec le schéma et leur anonymisation.
 
 ## Identifiants de référence
 
