@@ -1,34 +1,40 @@
-# HRMS SSO Configuration
+# HRMS Authentication Configuration
 
-## Decision
+## Decision by environment
 
-Use OIDC in development, preproduction, and production, with one OIDC configuration per environment.
+Use exactly one authentication scheme in each environment:
 
-The identity provider and its issuer/discovery URL have not yet been provided. Complete those values with the IAM team before configuring APEX; do not substitute a public or personal identity provider.
-
-| Environment | Protocol | Identity provider | Issuer / discovery URL |
+| Environment | Authentication | Identity provider / issuer | Status |
 |---|---|---|---|
-| Development | OIDC | To confirm with IAM | To confirm with IAM |
-| Preproduction | OIDC | To confirm with IAM | To confirm with IAM |
-| Production | OIDC | To confirm with IAM | To confirm with IAM |
+| Development | Temporary APEX local accounts; not SSO | None | Approved for development only |
+| Preproduction | OIDC | Provider and issuer/discovery URL to be confirmed with IAM | Blocked on IAM details |
+| Production | OIDC | Provider and issuer/discovery URL to be confirmed with IAM | Blocked on IAM details |
+
+Do not enable local accounts as a fallback in preproduction or production. Development accounts must be synthetic and must not access production data. Do not copy development credentials or authentication configuration into another environment.
 
 ## Claim mapping
 
-| Logical claim | OIDC claim | Requirement |
+The following OIDC claim names are candidates only. IAM must confirm the exact names and the stability of the subject before either OIDC environment is configured.
+
+| Logical claim | Candidate OIDC claim | Requirement |
 |---|---|---|
-| Stable identity | `sub` | Required; configure this claim as the APEX username and map it to an existing HRMS identity. Never use display name as a key. |
-| Username | `preferred_username` | Required for audit and display. |
-| Email | `email` | Required for notifications and account lookup. |
+| Stable identity | `sub` | Required; resolve to an active `HRMS_USER_IDENTITIES.SSO_SUBJECT`. Never use display name as a key. |
+| Username | `preferred_username` | Required for audit and display; confirm availability with IAM. |
+| Email | `email` | Required for notifications and account lookup; confirm availability with IAM. |
 | Full name | `name` | Optional; display only. |
-| Groups / roles | Provider-specific claim | Recommended for initial role mapping; HRMS authorization is still enforced server-side. |
+| Groups / roles | Provider-specific, possibly `groups` | Recommended as an input to role mapping; HRMS authorization is still enforced server-side. |
 
-The HRMS database maps the APEX username (the OIDC `sub`) to an employee through `HRMS_USER_IDENTITIES`; username/email claims are attributes, not employee keys. Confirm the provider's issuer and that `sub` remains stable for the application's client registration before enabling login.
+For development, provision only synthetic APEX local accounts and explicitly map each test account to an approved synthetic HRMS identity. The identity lookup and authorization checks remain mandatory regardless of the authentication scheme.
 
-The security schema must also include `HRMS_EMPLOYEE_SCOPE_DELEGATIONS` for time-bounded manager delegations. Configure a Page 0 process to call `HRMS.PKG_APP_CONTEXT.INITIALIZE_CONTEXT` on each authenticated request; secured packages must fail closed if the current APEX user/session has not been initialized.
+## Security and release gates
 
-## Secret handling and release gate
+- Configure one scheme only per environment; never combine OIDC and local accounts as alternate login paths.
+- Confirm the OIDC provider, issuer/discovery URL, exact claim names, redirect URIs, scopes, and logout behavior with IAM for preproduction and production.
+- Keep client IDs and secrets in environment-specific deployment configuration and the approved secret manager; never commit secrets or persist tokens in HRMS tables.
+- An authenticated identity without an active `HRMS_USER_IDENTITIES` mapping is denied with a generic message and a security audit event.
+- Deactivation or departure of an employee removes business access even if the identity provider still authenticates them.
+- Resolve application roles from the administered and audited HRMS mapping tables; do not treat external groups as final authorization.
+- Close the APEX session on logout and apply the configured OIDC provider logout policy outside development.
+- Initialize `HRMS.PKG_APP_CONTEXT` for authenticated APEX requests; protected packages must fail closed when no valid application context exists.
 
-- Keep client IDs and issuer URLs in environment-specific deployment configuration.
-- Store client secrets in the approved secret manager; never commit them or persist tokens in HRMS tables.
-- Configure and validate redirect URIs, scopes, logout behavior, and identity-to-employee mapping separately in each environment.
-- T014 remains open until the IAM provider, issuer, claim names, and APEX authentication settings are confirmed and tested.
+T014 remains open until IAM confirms the OIDC provider, per-environment issuers, and claim mapping, and the OIDC flow is tested in preproduction.

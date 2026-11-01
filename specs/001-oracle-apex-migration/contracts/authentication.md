@@ -18,13 +18,15 @@ Le fournisseur doit fournir un identifiant stable correspondant à un employé H
 
 ## Rules
 
-- Un seul protocole SSO est sélectionné par environnement ; le fournisseur, le protocole (`OIDC` ou `SAML`), l’issuer/metadata et les claims obligatoires sont documentés dans la configuration de déploiement avant T014.
-- Décision de migration : utiliser OIDC en développement, préproduction et production ; le fournisseur d’identité, l’issuer et les noms de claims restent à confirmer avec l’équipe IAM dans `apex/shared-components/authentication.md`.
+- Développement : utiliser temporairement un compte local APEX, sans fournisseur ni issuer SSO. Ces comptes sont réservés aux tests synthétiques et ne doivent pas accéder aux données de production.
+- Préproduction et production : utiliser OIDC, avec un seul mécanisme d'authentification par environnement. Ne pas prévoir de compte local comme solution de repli.
+- Le fournisseur OIDC, l’issuer/discovery URL de chaque environnement et les noms exacts des claims restent à confirmer avec l’équipe IAM avant l’activation d’OIDC; les candidats et les blocages sont suivis dans `apex/shared-components/authentication.md`.
+- L’identifiant stable reçu après authentification doit correspondre à `HRMS_USER_IDENTITIES.SSO_SUBJECT`, relié à un employé HRMS. Le nom d’affichage ne sert jamais de clé.
 - Une identité SSO sans correspondance HRMS est refusée avec un message générique et un événement de sécurité.
 - La désactivation ou le départ d’un employé retire l’accès métier, même si le fournisseur SSO l’authentifie encore.
 - Les rôles applicatifs sont résolus à partir d’une table de mapping administrée et auditée.
 - Aucun token, assertion ou secret SSO n’est enregistré dans les tables métier.
-- La déconnexion doit fermer la session APEX et appliquer la politique de déconnexion du fournisseur SSO.
+- La déconnexion ferme la session APEX et, hors développement, applique la politique de déconnexion du fournisseur OIDC.
 
 ## Acceptance checks
 
