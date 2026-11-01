@@ -34,13 +34,13 @@
 
 ### `HRMS.BATCH_EXECUTIONS`
 
-Table technique pour suivre les traitements longs et idempotents : `EXECUTION_ID`, `EXECUTION_TYPE`, `REFERENCE_ID`, `IDEMPOTENCY_KEY`, `STATUS`, dates de début/fin, compteurs, résumé d’erreur, demandeur et dates d’audit.
+Table technique pour suivre les traitements longs et idempotents : `BATCH_EXECUTION_ID`, `EXECUTION_TYPE`, `REFERENCE_KEY`, `IDEMPOTENCY_KEY`, `EXECUTION_STATUS`, dates de début/fin, compteurs, résumé d’erreur, demandeur et dates d’audit. La clé d’idempotence est unique ; une reprise réutilise la même ligne et incrémente le compteur de tentatives. Les statuts sont `PENDING`, `RUNNING`, `SUCCEEDED`, `FAILED` et `CANCELLED`.
 
-Règles : une clé d’idempotence ne peut être consommée deux fois avec succès ; les transitions sont monotones sauf reprise explicitement autorisée ; chaque échec conserve son message et son identifiant d’exécution.
+Règles : une clé d’idempotence ne peut être consommée deux fois avec succès ; les transitions sont monotones sauf reprise explicitement autorisée ; chaque échec conserve son code et un résumé assaini, sans secret ni donnée RH sensible.
 
 ### `HRMS.MIGRATION_RECONCILIATIONS`
 
-Table ou fichier de contrôle par lot de migration : objet, source, cible, volumes, écarts de clés, écarts d’agrégats, statut, anomalie et validation. Les données sensibles ne doivent pas être recopiées dans les messages d’erreur.
+Table de contrôle par objet et lot de migration, liée à `BATCH_EXECUTIONS` : source, cible, volumes, écarts de clés, comparaisons d’agrégats JSON, statut, anomalie assainie et validation. L’unicité du lot et de l’objet rend l’écriture idempotente ; les données sensibles ne doivent pas être recopiées dans les résumés.
 
 ## États métier à préserver
 

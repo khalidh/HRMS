@@ -1,0 +1,135 @@
+-- ============================================================================
+-- HRMS Operational Tables
+-- Oracle Database 19c
+-- Schema: HRMS
+-- ============================================================================
+
+-- A retry reuses the same row and idempotency key; the unique key prevents a
+-- second execution from consuming the same operation.
+DECLARE
+BEGIN
+    EXECUTE IMMEDIATE q'[
+        CREATE TABLE HRMS.BATCH_EXECUTIONS (
+            BATCH_EXECUTION_ID  NUMBER(15)
+                CONSTRAINT BATCH_EXECUTIONS_ID_NN NOT NULL,
+            EXECUTION_TYPE      VARCHAR2(50)
+                CONSTRAINT BATCH_EXECUTIONS_TYPE_NN NOT NULL,
+            REFERENCE_KEY       VARCHAR2(200),
+            IDEMPOTENCY_KEY     VARCHAR2(200)
+                CONSTRAINT BATCH_EXECUTIONS_IDEMP_NN NOT NULL,
+            EXECUTION_STATUS    VARCHAR2(20) DEFAULT 'PENDING'
+                CONSTRAINT BATCH_EXECUTIONS_STATUS_NN NOT NULL,
+            REQUESTED_BY        VARCHAR2(128)
+                CONSTRAINT BATCH_EXEC_REQUESTED_BY_NN NOT NULL,
+            REQUESTED_AT        TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP
+                CONSTRAINT BATCH_EXEC_REQUESTED_AT_NN NOT NULL,
+            STARTED_AT          TIMESTAMP WITH TIME ZONE,
+            COMPLETED_AT        TIMESTAMP WITH TIME ZONE,
+            RETRY_COUNT         NUMBER(5) DEFAULT 0
+                CONSTRAINT BATCH_EXECUTIONS_RETRY_NN NOT NULL,
+            ITEMS_TOTAL         NUMBER(12) DEFAULT 0
+                CONSTRAINT BATCH_EXECUTIONS_TOTAL_NN NOT NULL,
+            ITEMS_SUCCEEDED     NUMBER(12) DEFAULT 0
+                CONSTRAINT BATCH_EXECUTIONS_SUCCEEDED_NN NOT NULL,
+            ITEMS_FAILED        NUMBER(12) DEFAULT 0
+                CONSTRAINT BATCH_EXECUTIONS_FAILED_NN NOT NULL,
+            ERROR_CODE          VARCHAR2(100),
+            ERROR_SUMMARY       VARCHAR2(2000),
+            CREATED_BY          VARCHAR2(128)
+                CONSTRAINT BATCH_EXECUTIONS_CREATED_BY_NN NOT NULL,
+            CREATED_AT          TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP
+                CONSTRAINT BATCH_EXECUTIONS_CREATED_AT_NN NOT NULL,
+            UPDATED_BY          VARCHAR2(128),
+            UPDATED_AT          TIMESTAMP WITH TIME ZONE,
+            CONSTRAINT BATCH_EXECUTIONS_PK
+                PRIMARY KEY (BATCH_EXECUTION_ID),
+            CONSTRAINT BATCH_EXECUTIONS_IDEMP_KEY_UQ
+                UNIQUE (IDEMPOTENCY_KEY),
+            CONSTRAINT BATCH_EXECUTIONS_STATUS_CK
+                CHECK (EXECUTION_STATUS IN ('PENDING', 'RUNNING', 'SUCCEEDED', 'FAILED', 'CANCELLED')),
+            CONSTRAINT BATCH_EXECUTIONS_RETRY_CK
+                CHECK (RETRY_COUNT >= 0),
+            CONSTRAINT BATCH_EXECUTIONS_TOTAL_CK
+                CHECK (ITEMS_TOTAL >= 0 AND ITEMS_SUCCEEDED >= 0 AND ITEMS_FAILED >= 0),
+            CONSTRAINT BATCH_EXECUTIONS_DATES_CK
+                CHECK (COMPLETED_AT IS NULL OR STARTED_AT IS NULL OR COMPLETED_AT >= STARTED_AT)
+        )
+    ]';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 THEN
+            RAISE;
+        END IF;
+END;
+/
+
+DECLARE
+BEGIN
+    EXECUTE IMMEDIATE q'[
+        CREATE TABLE HRMS.MIGRATION_RECONCILIATIONS (
+            RECONCILIATION_ID   NUMBER(15)
+                CONSTRAINT MIG_RECON_ID_NN NOT NULL,
+            BATCH_EXECUTION_ID  NUMBER(15)
+                CONSTRAINT MIG_RECON_BATCH_ID_NN NOT NULL,
+            OBJECT_NAME         VARCHAR2(128)
+                CONSTRAINT MIG_RECON_OBJECT_NN NOT NULL,
+            SOURCE_NAME         VARCHAR2(128)
+                CONSTRAINT MIG_RECON_SOURCE_NN NOT NULL,
+            TARGET_NAME         VARCHAR2(128)
+                CONSTRAINT MIG_RECON_TARGET_NN NOT NULL,
+            SOURCE_ROW_COUNT    NUMBER(15),
+            TARGET_ROW_COUNT    NUMBER(15),
+            MISSING_KEY_COUNT   NUMBER(15) DEFAULT 0
+                CONSTRAINT MIG_RECON_MISSING_NN NOT NULL,
+            EXTRA_KEY_COUNT     NUMBER(15) DEFAULT 0
+                CONSTRAINT MIG_RECON_EXTRA_NN NOT NULL,
+            AGGREGATE_COMPARISON CLOB,
+            RECONCILIATION_STATUS VARCHAR2(20) DEFAULT 'PENDING'
+                CONSTRAINT MIG_RECON_STATUS_NN NOT NULL,
+            ANOMALY_SUMMARY     VARCHAR2(2000),
+            VALIDATED_BY        VARCHAR2(128),
+            VALIDATED_AT        TIMESTAMP WITH TIME ZONE,
+            CREATED_BY          VARCHAR2(128)
+                CONSTRAINT MIG_RECON_CREATED_BY_NN NOT NULL,
+            CREATED_AT          TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP
+                CONSTRAINT MIG_RECON_CREATED_AT_NN NOT NULL,
+            UPDATED_BY          VARCHAR2(128),
+            UPDATED_AT          TIMESTAMP WITH TIME ZONE,
+            CONSTRAINT MIG_RECONCILIATIONS_PK
+                PRIMARY KEY (RECONCILIATION_ID),
+            CONSTRAINT MIG_RECON_BATCH_OBJ_UQ
+                UNIQUE (BATCH_EXECUTION_ID, OBJECT_NAME),
+            CONSTRAINT MIG_RECON_BATCH_FK
+                FOREIGN KEY (BATCH_EXECUTION_ID)
+                REFERENCES HRMS.BATCH_EXECUTIONS (BATCH_EXECUTION_ID),
+            CONSTRAINT MIG_RECON_STATUS_CK
+                CHECK (RECONCILIATION_STATUS IN ('PENDING', 'MATCHED', 'MISMATCHED', 'APPROVED', 'ERROR')),
+            CONSTRAINT MIG_RECON_COUNTS_CK
+                CHECK (
+                    (SOURCE_ROW_COUNT IS NULL OR SOURCE_ROW_COUNT >= 0)
+                    AND (TARGET_ROW_COUNT IS NULL OR TARGET_ROW_COUNT >= 0)
+                    AND MISSING_KEY_COUNT >= 0
+                    AND EXTRA_KEY_COUNT >= 0
+                ),
+            CONSTRAINT MIG_RECON_AGG_JSON_CK
+                CHECK (AGGREGATE_COMPARISON IS JSON)
+        )
+    ]';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -955 THEN
+            RAISE;
+        END IF;
+END;
+/
+
+COMMENT ON TABLE HRMS.BATCH_EXECUTIONS IS
+    'Tracks operational and migration jobs; retries reuse the row identified by IDEMPOTENCY_KEY.';
+COMMENT ON COLUMN HRMS.BATCH_EXECUTIONS.ERROR_SUMMARY IS
+    'Sanitized diagnostic summary; must not contain credentials or sensitive employee data.';
+COMMENT ON TABLE HRMS.MIGRATION_RECONCILIATIONS IS
+    'Stores per-object migration row counts, key differences, aggregate comparisons, and validation.';
+COMMENT ON COLUMN HRMS.MIGRATION_RECONCILIATIONS.AGGREGATE_COMPARISON IS
+    'Optional JSON object containing named source and target aggregate values and their differences.';
+COMMENT ON COLUMN HRMS.MIGRATION_RECONCILIATIONS.ANOMALY_SUMMARY IS
+    'Sanitized anomaly summary; must not contain sensitive source row values.';

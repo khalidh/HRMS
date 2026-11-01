@@ -19,6 +19,7 @@ Le fournisseur doit fournir un identifiant stable correspondant à un employé H
 ## Rules
 
 - Un seul protocole SSO est sélectionné par environnement ; le fournisseur, le protocole (`OIDC` ou `SAML`), l’issuer/metadata et les claims obligatoires sont documentés dans la configuration de déploiement avant T014.
+- Décision de migration : utiliser OIDC en développement, préproduction et production ; le fournisseur d’identité, l’issuer et les noms de claims restent à confirmer avec l’équipe IAM dans `apex/shared-components/authentication.md`.
 - Une identité SSO sans correspondance HRMS est refusée avec un message générique et un événement de sécurité.
 - La désactivation ou le départ d’un employé retire l’accès métier, même si le fournisseur SSO l’authentifie encore.
 - Les rôles applicatifs sont résolus à partir d’une table de mapping administrée et auditée.
