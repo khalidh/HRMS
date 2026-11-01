@@ -128,8 +128,8 @@ CREATE OR REPLACE PACKAGE BODY HRMS.PKG_SECURITY AS
 
     -- -----------------------------------------------------------------------
     -- has_permission
-    -- Simplified role-based check using department and job grade
-    -- In production: would check a ROLES / PERMISSIONS junction table
+    -- APEX requests use explicit grants and authenticated employee scope.
+    -- The legacy branch remains for Forms callers during migration.
     -- -----------------------------------------------------------------------
     FUNCTION has_permission(
         p_emp_id IN NUMBER,
@@ -138,7 +138,42 @@ CREATE OR REPLACE PACKAGE BODY HRMS.PKG_SECURITY AS
     ) RETURN BOOLEAN IS
         v_dept_id  NUMBER;
         v_grade_id NUMBER;
+        v_permission_count PLS_INTEGER;
+        v_module_code VARCHAR2(30) := UPPER(TRIM(p_module));
+        v_action_code VARCHAR2(30) := UPPER(TRIM(p_action));
     BEGIN
+        IF v_module_code IS NULL OR v_action_code IS NULL THEN
+            RETURN FALSE;
+        END IF;
+
+        IF v_action_code = 'EDIT' THEN
+            v_action_code := 'UPDATE';
+        END IF;
+
+        IF APEX_AUTHENTICATION.IS_AUTHENTICATED THEN
+            IF v_module_code IN (
+                   'EMPLOYEE',
+                   'LEAVE',
+                   'PAYROLL',
+                   'PERFORMANCE',
+                   'AUDIT',
+                   'REPORT'
+               )
+               AND p_emp_id IS NOT NULL
+               AND NOT HRMS.PKG_APP_CONTEXT.is_employee_in_scope(p_emp_id)
+            THEN
+                RETURN FALSE;
+            END IF;
+
+            SELECT COUNT(*)
+              INTO v_permission_count
+              FROM HRMS.VW_APP_USER_PERMISSIONS permission
+             WHERE permission.MODULE_CODE = v_module_code
+               AND permission.ACTION_CODE = v_action_code;
+
+            RETURN v_permission_count > 0;
+        END IF;
+
         SELECT e.DEPT_ID, j.GRADE_ID
         INTO v_dept_id, v_grade_id
         FROM EMPLOYEES e
@@ -154,16 +189,16 @@ CREATE OR REPLACE PACKAGE BODY HRMS.PKG_SECURITY AS
             RETURN TRUE;  -- Senior management - full access
         END IF;
 
-        IF p_action = 'VIEW' AND v_grade_id >= 5 THEN
+        IF v_action_code = 'VIEW' AND v_grade_id >= 5 THEN
             RETURN TRUE;  -- Mid-level can view all
         END IF;
 
         -- Module-specific rules
-        IF p_module = 'LEAVE' AND p_action IN ('CREATE', 'VIEW') THEN
+        IF v_module_code = 'LEAVE' AND v_action_code IN ('CREATE', 'VIEW') THEN
             RETURN TRUE;  -- Everyone can submit/view own leave
         END IF;
 
-        IF p_module = 'EMPLOYEE' AND p_action = 'VIEW' THEN
+        IF v_module_code = 'EMPLOYEE' AND v_action_code = 'VIEW' THEN
             RETURN TRUE;  -- Everyone can view own profile
         END IF;
 

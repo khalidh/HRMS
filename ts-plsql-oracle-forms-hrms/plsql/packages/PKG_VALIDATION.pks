@@ -29,6 +29,42 @@ CREATE OR REPLACE PACKAGE HRMS.PKG_VALIDATION AS
         p_emp_number IN VARCHAR2
     ) RETURN BOOLEAN;
 
+    FUNCTION validate_employment_type(
+        p_employment_type IN VARCHAR2
+    ) RETURN BOOLEAN;
+
+    FUNCTION validate_employment_status(
+        p_employment_status IN VARCHAR2
+    ) RETURN BOOLEAN;
+
+    FUNCTION validate_department(
+        p_dept_id IN NUMBER
+    ) RETURN BOOLEAN;
+
+    FUNCTION validate_job(
+        p_job_id IN NUMBER
+    ) RETURN BOOLEAN;
+
+    FUNCTION validate_location(
+        p_location_code IN VARCHAR2
+    ) RETURN BOOLEAN;
+
+    FUNCTION validate_manager(
+        p_manager_emp_id IN NUMBER,
+        p_emp_id         IN NUMBER DEFAULT NULL
+    ) RETURN BOOLEAN;
+
+    FUNCTION validate_manager_hierarchy(
+        p_emp_id         IN NUMBER,
+        p_manager_emp_id IN NUMBER
+    ) RETURN BOOLEAN;
+
+    FUNCTION validate_employee_dates(
+        p_hire_date        IN DATE,
+        p_termination_date IN DATE,
+        p_employment_status IN VARCHAR2
+    ) RETURN BOOLEAN;
+
     FUNCTION is_future_date(
         p_date IN DATE
     ) RETURN BOOLEAN;

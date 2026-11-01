@@ -277,6 +277,10 @@ USING (
     UNION ALL SELECT 'EMPLOYEE', 'CREATE', 'Create employee records.' FROM dual
     UNION ALL SELECT 'EMPLOYEE', 'UPDATE', 'Update authorized employee records.' FROM dual
     UNION ALL SELECT 'EMPLOYEE', 'TERMINATE', 'Terminate an employee.' FROM dual
+    UNION ALL SELECT 'EMPLOYEE', 'PROFILE_VIEW', 'View authorized employee profile and contact fields.' FROM dual
+    UNION ALL SELECT 'EMPLOYEE', 'DEPENDENTS_VIEW', 'View authorized dependent details.' FROM dual
+    UNION ALL SELECT 'EMPLOYEE', 'CONTACTS_VIEW', 'View authorized emergency contacts.' FROM dual
+    UNION ALL SELECT 'EMPLOYEE', 'HISTORY_VIEW', 'View authorized employee history.' FROM dual
     UNION ALL SELECT 'EMPLOYEE', 'EXPORT', 'Export authorized employee data.' FROM dual
     UNION ALL SELECT 'ORGANIZATION', 'VIEW', 'View organizational data.' FROM dual
     UNION ALL SELECT 'ORGANIZATION', 'UPDATE', 'Update organizational data.' FROM dual

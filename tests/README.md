@@ -19,10 +19,11 @@
 
 ```bash
 # Installer dans un schéma HRMS neuf et isolé (refus si le schéma contient déjà un objet)
-sql -S "$HRMS_DB_CONNECT" @ts-plsql-oracle-forms-hrms/data/migration/00_install_test.sql INSTALL_EMPTY_HRMS_TEST_SCHEMA
+HRMS_INSTALL_CONFIRMATION=INSTALL_EMPTY_HRMS_TEST_SCHEMA \
+  scripts/deploy-hrms.sh --install-test-schema
 
 # Contrôles de schéma
-sql -S "$HRMS_DB_CONNECT" @tests/sql/foundation_schema.sql
+scripts/deploy-hrms.sh --check-schema
 
 # Tests utPLSQL
 sql -S "$HRMS_DB_CONNECT" <<'SQL'
@@ -31,6 +32,12 @@ SQL
 ```
 
 `00_install_test.sql` crée et compile le schéma, mais ne charge pas les scripts existants de `data/seed/`. Avant d'utiliser ces données, vérifiez leur anonymisation et leur compatibilité avec le DDL; le jeu de fixtures de référence reste à fournir.
+
+Les scripts `scripts/deploy-hrms.sh` et `scripts/rollback-hrms.sh` attendent SQLcl (`SQLCL_BIN`, par défaut `sql`). L'installation complète est réservée à un schéma HRMS de test vide. Un export applicatif versionné sous `apex/application/` s'importe avec `--import-apex`; la connexion APEX (`APEX_DB_CONNECT`) doit appartenir au workspace cible. Le rollback de staging est limité à un lot `RUNNING`; la restauration APEX réimporte un export connu comme valide et ne restaure ni le schéma ni les données métier. Aucun déploiement de mise à niveau en production n'est activé tant que des migrations réversibles et ordonnées ne sont pas définies.
+
+Les contrôles `--check-schema` exécutent le contrôle structurel, les tests du package d'erreurs et les validations US1. Le test `tests/plsql/test_pkg_app_errors.sql` écrit temporairement une ligne de journal d'audit, vérifie son contenu puis la supprime. Exécutez-le uniquement dans un schéma de test isolé.
+
+Les scripts `tests/security/us1_employee_access.sql` et `tests/integration/us1_employee_lifecycle.sql` s'exécutent depuis une session APEX authentifiée avec les items de test documentés dans leur en-tête. Le rapprochement Forms/APEX requiert des tables de référence anonymisées non présentes dans le dépôt et un rôle HR explicitement autorisé.
 
 ## Organisation
 

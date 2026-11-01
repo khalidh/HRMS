@@ -41,11 +41,13 @@ description: "Tâches d’implémentation de la migration HRMS vers Oracle APEX"
 - [x] T013 [P] Créer le script d’installation de test, puis les scripts de staging, validation et rollback dans `ts-plsql-oracle-forms-hrms/data/migration/00_install_test.sql`, `01_staging.sql`, `02_validate.sql` et `03_rollback.sql`. — [GitHub #7](https://github.com/khalidh/HRMS/issues/7)
 - [ ] T014 Documenter un compte local APEX temporaire en développement et un mécanisme OIDC unique en préproduction et production; confirmer le fournisseur, les issuers et les claims avec l’IAM dans `apex/shared-components/authentication.md` conformément à [contracts/authentication.md](./contracts/authentication.md). — [GitHub #8](https://github.com/khalidh/HRMS/issues/8)
 - [x] T015 [P] Configurer les rôles, autorisations, navigation commune, LOV partagées et thème Universal Theme dans `apex/shared-components/authorization.md`, `navigation.md` et `theme.md`. — [GitHub #9](https://github.com/khalidh/HRMS/issues/9)
-- [ ] T016 [P] Créer le package de normalisation des erreurs métier et messages utilisateur dans `ts-plsql-oracle-forms-hrms/plsql/packages/PKG_APP_ERRORS.pks` et `PKG_APP_ERRORS.pkb`. — [GitHub #10](https://github.com/khalidh/HRMS/issues/10)
-- [ ] T017 Configurer la chaîne de déploiement versionnée des scripts SQL et de l’export APEX dans `scripts/deploy-hrms.sh` et `scripts/rollback-hrms.sh`. — [GitHub #11](https://github.com/khalidh/HRMS/issues/11)
+- [x] T016 [P] Créer le package de normalisation des erreurs métier et messages utilisateur dans `ts-plsql-oracle-forms-hrms/plsql/packages/PKG_APP_ERRORS.pks` et `PKG_APP_ERRORS.pkb`. — [GitHub #10](https://github.com/khalidh/HRMS/issues/10)
+- [x] T017 Configurer la chaîne de déploiement versionnée des scripts SQL et de l’export APEX dans `scripts/deploy-hrms.sh` et `scripts/rollback-hrms.sh`. Scripts validés par `bash -n`, `--help` et `--plan`; aucun déploiement Oracle n’a été exécuté. — [GitHub #11](https://github.com/khalidh/HRMS/issues/11)
 - [ ] T018 Vérifier les contraintes, compilations, droits minimaux et tables techniques avec `tests/sql/foundation_schema.sql` avant d’ouvrir les phases métier. — [GitHub #12](https://github.com/khalidh/HRMS/issues/12)
 
 **Checkpoint**: fondation disponible ; les user stories peuvent être développées en parallèle.
+
+**Validation en suspens**: T014 attend les paramètres IAM. T018 ne peut pas être validée tant qu’un schéma de test isolé n’est pas accessible; la compilation Oracle n’a pas été exécutée.
 
 ---
 
@@ -57,22 +59,24 @@ description: "Tâches d’implémentation de la migration HRMS vers Oracle APEX"
 
 ### Tests for User Story 1
 
-- [ ] T019 [P] [US1] Écrire les tests de permissions employé/RH/manager/auditeur dans `tests/security/us1_employee_access.sql` et vérifier qu’ils échouent avant les vues sécurisées. — [GitHub #13](https://github.com/khalidh/HRMS/issues/13)
-- [ ] T020 [P] [US1] Écrire les tests de recherche, hiérarchie et cycle de vie dans `tests/integration/us1_employee_lifecycle.sql` et vérifier qu’ils échouent avant l’implémentation. — [GitHub #14](https://github.com/khalidh/HRMS/issues/14)
-- [ ] T021 [P] [US1] Écrire le test de non-régression Forms/APEX pour effectif et organisation dans `tests/integration/us1_forms_reconciliation.sql`. — [GitHub #15](https://github.com/khalidh/HRMS/issues/15)
+- [ ] T019 [P] [US1] Écrire les tests de permissions employé/RH/manager/auditeur dans `tests/security/us1_employee_access.sql` et vérifier qu’ils échouent avant les vues sécurisées. Le test est écrit; la vérification d’exécution reste à faire dans une session APEX avec fixtures. — [GitHub #13](https://github.com/khalidh/HRMS/issues/13)
+- [ ] T020 [P] [US1] Écrire les tests de recherche, hiérarchie et cycle de vie dans `tests/integration/us1_employee_lifecycle.sql` et vérifier qu’ils échouent avant l’implémentation. Le test est écrit; la vérification d’exécution reste à faire dans une session APEX avec fixtures. — [GitHub #14](https://github.com/khalidh/HRMS/issues/14)
+- [x] T021 [P] [US1] Écrire le test de non-régression Forms/APEX pour effectif et organisation dans `tests/integration/us1_forms_reconciliation.sql`. L’exécution exige des références Forms anonymisées non fournies. — [GitHub #15](https://github.com/khalidh/HRMS/issues/15)
 
 ### Implementation for User Story 1
 
-- [ ] T022 [P] [US1] Créer les vues de recherche employé, organisation, hiérarchie et historique dans `ts-plsql-oracle-forms-hrms/schema/views/hrms_employee_views.sql`. — [GitHub #16](https://github.com/khalidh/HRMS/issues/16)
-- [ ] T023 [P] [US1] Ajouter les validations de matricule, email, dates, statut, type d’emploi, département, poste, lieu, manager et cycles hiérarchiques dans `ts-plsql-oracle-forms-hrms/plsql/packages/PKG_VALIDATION.pkb`. — [GitHub #17](https://github.com/khalidh/HRMS/issues/17)
-- [ ] T024 [US1] Refactorer les opérations d’embauche, transfert, promotion, termination et réembauche dans `ts-plsql-oracle-forms-hrms/plsql/packages/PKG_EMPLOYEE.pkb` pour utiliser le contexte applicatif et l’audit. — [GitHub #18](https://github.com/khalidh/HRMS/issues/18)
-- [ ] T025 [US1] Créer la page APEX de recherche et liste des employés dans `apex/application/pages/us1_employee_search.sql` avec filtres, pagination, actions autorisées et masquage. — [GitHub #19](https://github.com/khalidh/HRMS/issues/19)
-- [ ] T026 [US1] Créer la page APEX de fiche employé et ses onglets dans `apex/application/pages/us1_employee_form.sql` pour identité, emploi, dépendants, contacts, historique et audit. — [GitHub #20](https://github.com/khalidh/HRMS/issues/20)
-- [ ] T027 [US1] Créer les pages d’administration départements, lieux, grades, postes et managers dans `apex/application/pages/us1_organization.sql`. — [GitHub #21](https://github.com/khalidh/HRMS/issues/21)
-- [ ] T028 [US1] Créer les dialogues de transfert, promotion, termination et réembauche dans `apex/application/pages/us1_employee_actions.sql` avec confirmation, motif et branchement après succès. — [GitHub #22](https://github.com/khalidh/HRMS/issues/22)
-- [ ] T029 [US1] Ajouter les tests d’acceptation et le scénario indépendant US1 dans `tests/browser/us1_employee_journey.md`. — [GitHub #23](https://github.com/khalidh/HRMS/issues/23)
+- [x] T022 [P] [US1] Créer les vues de recherche employé, organisation, hiérarchie et historique dans `ts-plsql-oracle-forms-hrms/schema/views/hrms_employee_views.sql`. — [GitHub #16](https://github.com/khalidh/HRMS/issues/16)
+- [x] T023 [P] [US1] Ajouter les validations de matricule, email, dates, statut, type d’emploi, département, poste, lieu, manager et cycles hiérarchiques dans `ts-plsql-oracle-forms-hrms/plsql/packages/PKG_VALIDATION.pkb`. — [GitHub #17](https://github.com/khalidh/HRMS/issues/17)
+- [x] T024 [US1] Refactorer les opérations d’embauche, transfert, promotion, termination et réembauche dans `ts-plsql-oracle-forms-hrms/plsql/packages/PKG_EMPLOYEE.pkb` pour utiliser le contexte applicatif et l’audit. — [GitHub #18](https://github.com/khalidh/HRMS/issues/18)
+- [x] T025 [US1] Créer le descripteur APEX de recherche et liste des employés dans `apex/application/pages/us1_employee_search.sql` avec filtres, pagination, actions autorisées et masquage. — [GitHub #19](https://github.com/khalidh/HRMS/issues/19)
+- [x] T026 [US1] Créer le descripteur APEX de fiche employé et ses onglets dans `apex/application/pages/us1_employee_form.sql` pour identité, emploi, dépendants, contacts, historique et audit. — [GitHub #20](https://github.com/khalidh/HRMS/issues/20)
+- [x] T027 [US1] Créer le descripteur APEX d’administration départements, lieux, grades, postes et managers dans `apex/application/pages/us1_organization.sql`. — [GitHub #21](https://github.com/khalidh/HRMS/issues/21)
+- [x] T028 [US1] Créer le descripteur APEX des dialogues de transfert, promotion, termination et réembauche dans `apex/application/pages/us1_employee_actions.sql` avec confirmation, motif et branchement après succès. — [GitHub #22](https://github.com/khalidh/HRMS/issues/22)
+- [x] T029 [US1] Ajouter le scénario indépendant US1 dans `tests/browser/us1_employee_journey.md`. La recette navigateur requiert l’export APEX, le workspace et les fixtures. — [GitHub #23](https://github.com/khalidh/HRMS/issues/23)
 
 **Checkpoint**: US1 est démontrable indépendamment et constitue le MVP.
+
+**Validation en suspens**: les vues et packages n’ont pas été compilés sur Oracle; T019/T020 doivent être exécutées avec une session APEX authentifiée et des fixtures, et T021 avec les données Forms anonymisées. Les fichiers APEX livrés ici sont des descripteurs lisibles, pas un export déployable.
 
 ---
 

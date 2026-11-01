@@ -12,14 +12,16 @@ This is the minimum capability baseline from [the role-access contract](../../sp
 
 | Role | Minimum capabilities when explicitly granted | Data scope |
 |---|---|---|
-| `EMPLOYEE` | `EMPLOYEE.VIEW/UPDATE`, `LEAVE.VIEW/CREATE/CANCEL`, `PERFORMANCE.VIEW/UPDATE` | Own employee record and own requests, reviews, and goals only. |
-| `MANAGER` | `EMPLOYEE.VIEW`, `ORGANIZATION.VIEW`, `LEAVE.VIEW/APPROVE/REJECT`, `PERFORMANCE.VIEW/UPDATE/APPROVE` | Current team hierarchy and valid delegated scope. |
-| `HR` | `EMPLOYEE.VIEW/CREATE/UPDATE/TERMINATE`, `ORGANIZATION.VIEW/UPDATE`, `LEAVE.VIEW/CREATE/APPROVE/REJECT/CANCEL`, `PERFORMANCE.VIEW/CREATE/UPDATE/APPROVE`, `REPORT.VIEW` | Authorized HR organization and employee scope. |
+| `EMPLOYEE` | `EMPLOYEE.VIEW/UPDATE`, `LEAVE.VIEW/CREATE/CANCEL`, `PERFORMANCE.VIEW/UPDATE` | Own employee record and own requests, reviews, and goals only. Grant profile, dependent, or contact sub-actions only when the corresponding self-service page is approved. |
+| `MANAGER` | `EMPLOYEE.VIEW`, `ORGANIZATION.VIEW`, `LEAVE.VIEW/APPROVE/REJECT`, `PERFORMANCE.VIEW/UPDATE/APPROVE` | Current team hierarchy and valid delegated scope. Employee profile, dependent, contact, and history actions are not implied. |
+| `HR` | `EMPLOYEE.VIEW/CREATE/UPDATE/TERMINATE`, `EMPLOYEE.PROFILE_VIEW/DEPENDENTS_VIEW/CONTACTS_VIEW/HISTORY_VIEW`, `ORGANIZATION.VIEW/UPDATE`, `AUDIT.VIEW`, `LEAVE.VIEW/CREATE/APPROVE/REJECT/CANCEL`, `PERFORMANCE.VIEW/CREATE/UPDATE/APPROVE`, `REPORT.VIEW` | Authorized HR organization and employee scope. Each sub-action still requires an explicit grant. |
 | `PAYROLL` | `PAYROLL.VIEW/CALCULATE/APPROVE/PAY/REVERSE`, `REPORT.VIEW` | Payroll data needed for assigned duties. |
 | `ADMIN` | `ADMIN.VIEW/UPDATE/MANAGE/EXECUTE` | Technical configuration and operations; no implicit access to employee, payroll, or secret data. |
 | `AUDITOR` | `AUDIT.VIEW`, `REPORT.VIEW`; add `AUDIT.EXPORT` or `REPORT.EXPORT` only when separately approved | Read-only and limited to explicitly authorized records and exports. |
 
 Exports are separate actions (`EMPLOYEE.EXPORT`, `LEAVE.EXPORT`, `PAYROLL.EXPORT`, `PERFORMANCE.EXPORT`, `AUDIT.EXPORT`, `REPORT.EXPORT`); viewing a page does not grant export access. Sensitive columns such as national identifiers, bank details, tax data, and attachments require a distinct permission before any page or export exposes them. The current action catalog does not yet define those column-level actions; add and review them before implementing those displays.
+
+For US1, employee profile, dependent, contact, and history regions require their respective `EMPLOYEE.*_VIEW` action in addition to the base employee scope. The audit region requires `AUDIT.VIEW`. Organization maintenance requires `ORGANIZATION.UPDATE`; the page delegates changes to `PKG_ORGANIZATION`, which checks the grant again. No role-action grants are seeded by the schema.
 
 ## APEX enforcement
 

@@ -1,0 +1,41 @@
+-- APEX page descriptor: Employee Search
+-- Proposed page: 50 (confirm availability when the application export is created).
+-- This file documents components; it is not an executable APEX export.
+--
+-- Authorization:
+--   Page and report: EMPLOYEE.VIEW through a PL/SQL authorization scheme.
+--   Create button: EMPLOYEE.CREATE.
+--   Row actions: EMPLOYEE.UPDATE / EMPLOYEE.TERMINATE as applicable.
+--   Every target operation calls PKG_EMPLOYEE, which repeats authorization.
+--
+-- Region: Employee Filters (Static Content, bordered)
+-- Items:
+--   P50_LAST_NAME       Text; escaped, prefix/contains search.
+--   P50_FIRST_NAME      Text.
+--   P50_DEPARTMENT_ID   Select List; LOV from VW_APP_ORG_DEPARTMENTS, active rows only.
+--   P50_STATUS          Select List; supported EMPLOYMENT_STATUS codes only.
+--   P50_LOCATION_CODE   Select List; LOV from VW_APP_ORG_LOCATIONS, active rows only.
+--   P50_HIRE_FROM       Date Picker, format YYYY-MM-DD.
+--   P50_HIRE_TO         Date Picker, format YYYY-MM-DD; server requires FROM <= TO.
+--   P50_SEARCH          Submit; server process validates criteria and refreshes report.
+--
+-- Region: Authorized Employees (Interactive Report)
+-- Source:
+--   SELECT EMP_ID, EMP_NUMBER, FIRST_NAME, LAST_NAME, HIRE_DATE,
+--          DEPT_ID, DEPT_NAME, JOB_TITLE, EMPLOYMENT_STATUS, LOCATION_CODE
+--     FROM HRMS.VW_APP_EMPLOYEE_ORGANIZATION
+--    WHERE (:P50_LAST_NAME IS NULL OR UPPER(LAST_NAME) LIKE '%' || UPPER(:P50_LAST_NAME) || '%')
+--      AND (:P50_FIRST_NAME IS NULL OR UPPER(FIRST_NAME) LIKE '%' || UPPER(:P50_FIRST_NAME) || '%')
+--      AND (:P50_DEPARTMENT_ID IS NULL OR DEPT_ID = :P50_DEPARTMENT_ID)
+--      AND (:P50_STATUS IS NULL OR EMPLOYMENT_STATUS = :P50_STATUS)
+--      AND (:P50_LOCATION_CODE IS NULL OR LOCATION_CODE = :P50_LOCATION_CODE)
+--      AND (:P50_HIRE_FROM IS NULL OR HIRE_DATE >= TO_DATE(:P50_HIRE_FROM, 'YYYY-MM-DD'))
+--      AND (:P50_HIRE_TO IS NULL OR HIRE_DATE < TO_DATE(:P50_HIRE_TO, 'YYYY-MM-DD') + 1)
+--   Do not add EMAIL, phone, address, salary, national identifier, or bank data.
+--   The secure view supplies server-side row scope; native report pagination remains enabled.
+--
+-- Actions:
+--   New Employee -> page 51; require EMPLOYEE.CREATE.
+--   Employee link -> page 51, set P51_EMP_ID; require EMPLOYEE.VIEW.
+--   Lifecycle menu -> page 53, set P53_EMP_ID; each action has its own authorization.
+--   Do not create custom HTML edit links or rely on hidden buttons for security.

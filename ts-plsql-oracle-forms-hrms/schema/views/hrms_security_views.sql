@@ -72,9 +72,7 @@ SELECT DISTINCT scoped.EMP_ID
         UNION
         SELECT employee.EMP_ID
           FROM HRMS.EMPLOYEES employee
-         WHERE employee.EMPLOYMENT_STATUS = 'ACTIVE'
-           AND employee.ACTIVE_FLAG = 'Y'
-           AND EXISTS (
+         WHERE EXISTS (
                SELECT 1
                  FROM HRMS.VW_APP_USER_PERMISSIONS permission
                 WHERE permission.ROLE_CODE IN ('HR', 'AUDITOR')
@@ -84,11 +82,17 @@ SELECT DISTINCT scoped.EMP_ID
        ) scoped
   JOIN HRMS.EMPLOYEES target
     ON target.EMP_ID = scoped.EMP_ID
- WHERE target.EMPLOYMENT_STATUS = 'ACTIVE'
-   AND target.ACTIVE_FLAG = 'Y';
+ WHERE (target.EMPLOYMENT_STATUS = 'ACTIVE' AND target.ACTIVE_FLAG = 'Y')
+    OR EXISTS (
+       SELECT 1
+         FROM HRMS.VW_APP_USER_PERMISSIONS permission
+        WHERE permission.ROLE_CODE IN ('HR', 'AUDITOR')
+          AND permission.MODULE_CODE = 'EMPLOYEE'
+          AND permission.ACTION_CODE = 'VIEW'
+   );
 
 COMMENT ON TABLE HRMS.VW_APP_EMPLOYEE_SCOPE IS
-    'Employee scope: self, manager hierarchy, active delegated hierarchy, or explicitly authorized HR/auditor records.';
+    'Employee scope: self, active manager/delegated hierarchy, or HR/auditor records when EMPLOYEE.VIEW is explicitly granted.';
 
 CREATE OR REPLACE VIEW HRMS.VW_APP_EMPLOYEES AS
 SELECT employee.EMP_ID,

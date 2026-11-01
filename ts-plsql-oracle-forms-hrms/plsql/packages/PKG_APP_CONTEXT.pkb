@@ -146,31 +146,14 @@ CREATE OR REPLACE PACKAGE BODY HRMS.PKG_APP_CONTEXT AS
         END IF;
 
         v_current_employee_id := get_employee_id;
+        IF v_current_employee_id IS NULL THEN
+            RETURN FALSE;
+        END IF;
 
-        EXECUTE IMMEDIATE q'[
-            SELECT COUNT(*)
-              FROM (
-                    SELECT employee.emp_id
-                      FROM HRMS.EMPLOYEES employee
-                     START WITH employee.emp_id = :manager_employee_id
-                   CONNECT BY NOCYCLE PRIOR employee.emp_id = employee.manager_emp_id
-                    UNION
-                    SELECT employee.emp_id
-                      FROM HRMS.EMPLOYEES employee
-                     START WITH employee.emp_id IN (
-                           SELECT delegation.delegator_emp_id
-                             FROM HRMS.HRMS_EMPLOYEE_SCOPE_DELEGATIONS delegation
-                            WHERE delegation.delegate_emp_id = :delegate_employee_id
-                              AND delegation.active_flag = 'Y'
-                              AND delegation.valid_from <= SYSDATE
-                              AND (delegation.valid_to IS NULL OR delegation.valid_to > SYSDATE)
-                       )
-                   CONNECT BY NOCYCLE PRIOR employee.emp_id = employee.manager_emp_id
-                   ) scoped
-             WHERE scoped.emp_id = :target_employee_id
-        ]'
-        INTO v_scope_match_count
-        USING v_current_employee_id, v_current_employee_id, in_target_employee_id;
+        SELECT COUNT(*)
+          INTO v_scope_match_count
+          FROM HRMS.VW_APP_EMPLOYEE_SCOPE employee_scope
+         WHERE employee_scope.EMP_ID = in_target_employee_id;
 
         RETURN v_scope_match_count > 0;
     EXCEPTION

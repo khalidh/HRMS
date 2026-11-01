@@ -1,0 +1,31 @@
+-- APEX page descriptor: Organization Administration
+-- Proposed page: 52 (confirm availability when the application export is created).
+-- This file documents components; it is not an executable APEX export.
+--
+-- Authorization:
+--   Page and read regions: ORGANIZATION.VIEW.
+--   Create/update processes: ORGANIZATION.UPDATE, checked again by PKG_ORGANIZATION.
+--   Manager selections use VW_APP_EMPLOYEES and require EMPLOYEE.VIEW.
+--
+-- Tabs and data sources:
+--   Departments: HRMS.VW_APP_ORG_DEPARTMENTS.
+--   Locations:   HRMS.VW_APP_ORG_LOCATIONS.
+--   Grades:      HRMS.VW_APP_ORG_JOB_GRADES.
+--   Job Titles:  HRMS.VW_APP_ORG_JOB_TITLES.
+--   Managers:    HRMS.VW_APP_EMPLOYEES, active employees only.
+--
+-- Department fields:
+--   DEPT_CODE, DEPT_NAME, PARENT_DEPT_ID, COST_CENTER, MANAGER_EMP_ID,
+--   LOCATION_CODE, ACTIVE_FLAG.
+-- Location fields:
+--   LOCATION_CODE, LOCATION_NAME, CITY, STATE_PROVINCE, COUNTRY_CODE, ACTIVE_FLAG.
+-- Grade fields:
+--   GRADE_CODE, GRADE_NAME, MIN_SALARY, MAX_SALARY, ACTIVE_FLAG.
+-- Job fields:
+--   JOB_CODE, JOB_TITLE, JOB_FAMILY, GRADE_ID, ACTIVE_FLAG.
+--
+-- All writes call PKG_ORGANIZATION create/update procedures; do not enable automatic
+-- form DML against the underlying tables or secured views. The package validates
+-- parent cycles, active references, codes, salary ranges, and active flags, then audits.
+-- Use native APEX report pagination and keep inactive references visible for existing records,
+-- but exclude them from new-record LOVs.

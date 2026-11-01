@@ -46,15 +46,18 @@ SET DEFINE OFF
 @@../schema/tables/06_security_tables.sql
 @@../schema/tables/07_audit_context.sql
 @@../schema/tables/08_batch_actor.sql
+@@../schema/tables/09_us1_actor_columns.sql
 
 @@../schema/sequences/hrms_sequences.sql
 @@../schema/sequences/hrms_operational_sequences.sql
 
 @@../plsql/packages/PKG_COMMON.pks
 @@../plsql/packages/PKG_AUDIT.pks
+@@../plsql/packages/PKG_APP_ERRORS.pks
 @@../plsql/packages/PKG_APP_CONTEXT.pks
 @@../plsql/packages/PKG_BATCH.pks
 @@../plsql/packages/PKG_EMPLOYEE.pks
+@@../plsql/packages/PKG_ORGANIZATION.pks
 @@../plsql/packages/PKG_INTEGRATION.pks
 @@../plsql/packages/PKG_LEAVE.pks
 @@../plsql/packages/PKG_NOTIFICATION.pks
@@ -64,11 +67,17 @@ SET DEFINE OFF
 @@../plsql/packages/PKG_SECURITY.pks
 @@../plsql/packages/PKG_VALIDATION.pks
 
+@@../schema/views/hrms_views.sql
+@@../schema/views/hrms_security_views.sql
+@@../schema/views/hrms_employee_views.sql
+
 @@../plsql/packages/PKG_APP_CONTEXT.pkb
 @@../plsql/packages/PKG_AUDIT.pkb
+@@../plsql/packages/PKG_APP_ERRORS.pkb
 @@../plsql/packages/PKG_BATCH.pkb
 @@../plsql/packages/PKG_COMMON.pkb
 @@../plsql/packages/PKG_EMPLOYEE.pkb
+@@../plsql/packages/PKG_ORGANIZATION.pkb
 @@../plsql/packages/PKG_INTEGRATION.pkb
 @@../plsql/packages/PKG_LEAVE.pkb
 @@../plsql/packages/PKG_NOTIFICATION.pkb
@@ -78,8 +87,6 @@ SET DEFINE OFF
 @@../plsql/packages/PKG_SECURITY.pkb
 @@../plsql/packages/PKG_VALIDATION.pkb
 
-@@../schema/views/hrms_views.sql
-@@../schema/views/hrms_security_views.sql
 @@../plsql/triggers/trg_employees.sql
 @@../plsql/triggers/trg_audit.sql
 
@@ -114,6 +121,7 @@ BEGIN
       FROM (
             SELECT 'BATCH_EXECUTIONS' OBJECT_NAME FROM DUAL
             UNION ALL SELECT 'MIGRATION_RECONCILIATIONS' FROM DUAL
+            UNION ALL SELECT 'AUDIT_LOG' FROM DUAL
             UNION ALL SELECT 'HRMS_USER_IDENTITIES' FROM DUAL
             UNION ALL SELECT 'HRMS_ROLES' FROM DUAL
             UNION ALL SELECT 'HRMS_ACTIONS' FROM DUAL

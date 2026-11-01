@@ -66,7 +66,7 @@ BEGIN
         CHECK (ACTION_TYPE IN (
             'INSERT', 'UPDATE', 'DELETE', 'STATUS_CHANGE', 'EXPORT',
             'EXPORT_DENIED', 'EXPORT_FAILED', 'SENSITIVE_READ', 'AUTHZ_CHANGE',
-            'LOGIN', 'LOGOUT', 'PURGE'
+            'LOGIN', 'LOGOUT', 'PURGE', 'ERROR'
         ))
     ]';
 END;

@@ -1,0 +1,51 @@
+-- APEX page descriptor: Employee Profile
+-- Proposed page: 51 (confirm availability when the application export is created).
+-- This file documents components; it is not an executable APEX export.
+--
+-- Authorization:
+--   Page: EMPLOYEE.VIEW.
+--   Profile region: EMPLOYEE.PROFILE_VIEW.
+--   Dependents: EMPLOYEE.DEPENDENTS_VIEW.
+--   Emergency contacts: EMPLOYEE.CONTACTS_VIEW.
+--   History: EMPLOYEE.HISTORY_VIEW.
+--   Audit metadata: AUDIT.VIEW.
+--   Update process: EMPLOYEE.UPDATE, checked again by PKG_EMPLOYEE.
+--
+-- Items:
+--   P51_EMP_ID        Hidden, protected; set only by the native report link from page 50.
+--   P51_EMP_NUMBER    Display Only, escaped.
+--   P51_FIRST_NAME    Text; required when updating.
+--   P51_MIDDLE_NAME   Text; display-only until a dedicated update API is provided.
+--   P51_LAST_NAME     Text; required when updating.
+--   P51_EMAIL         Text; validated by PKG_VALIDATION.
+--   P51_PHONE_WORK    Text; validated by PKG_VALIDATION.
+--   P51_PHONE_MOBILE  Text; validated by PKG_VALIDATION.
+--   P51_ADDRESS_*     Text; shown only in the profile region.
+--
+-- Tab: Profile
+--   Source: HRMS.VW_APP_EMPLOYEE_PROFILE, filtered by EMP_ID = :P51_EMP_ID.
+--   Save process calls HRMS.PKG_EMPLOYEE.UPDATE_EMPLOYEE with bind item values.
+--   No direct DML on HRMS.EMPLOYEES.
+--
+-- Tab: Employment
+--   Source: HRMS.VW_APP_EMPLOYEE_ORGANIZATION, filtered by EMP_ID = :P51_EMP_ID.
+--   Read-only employment state, department, job, manager, location, and hire date.
+--   Do not expose individual salary without a separately authorized payroll region.
+--
+-- Tab: Dependents
+--   Source: HRMS.VW_APP_EMPLOYEE_DEPENDENTS, filtered by EMP_ID = :P51_EMP_ID.
+--   Display names, relationship, benefit enrollment, and active state only.
+--   SSNs, dates of birth, and encrypted values are not selected.
+--
+-- Tab: Emergency Contacts
+--   Source: HRMS.VW_APP_EMPLOYEE_CONTACTS, filtered by EMP_ID = :P51_EMP_ID.
+--   Use the CONTACTS_VIEW authorization; escape all displayed contact values.
+--
+-- Tab: History
+--   Source: HRMS.VW_APP_EMPLOYEE_HISTORY, filtered by EMP_ID = :P51_EMP_ID.
+--   Salary values and free-text comments are intentionally omitted.
+--
+-- Tab: Audit
+--   Source: HRMS.VW_APP_EMPLOYEE_AUDIT, filtered by EMP_ID = :P51_EMP_ID.
+--   Show action, actor, time, session, and observed client address only; never show OLD_VALUES
+--   or NEW_VALUES payloads.

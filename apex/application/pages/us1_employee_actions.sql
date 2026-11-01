@@ -1,0 +1,32 @@
+-- APEX page descriptor: Employee Lifecycle Actions
+-- Proposed page: 53 (confirm availability when the application export is created).
+-- This file documents focused dialogs; it is not an executable APEX export.
+--
+-- Shared item: P53_EMP_ID, set only by the authorized employee report/profile link.
+-- Every dialog process validates the employee, item state, action permission, and input again
+-- in PKG_EMPLOYEE; client-side confirmation is only a usability layer.
+--
+-- Dialog: Transfer (EMPLOYEE.UPDATE)
+--   P53_NEW_DEPT_ID, P53_NEW_JOB_ID, P53_NEW_MANAGER_ID, P53_NEW_LOCATION,
+--   P53_EFFECTIVE_DATE, P53_REASON_CODE, P53_COMMENTS.
+--   Process: PKG_EMPLOYEE.TRANSFER_EMPLOYEE.
+--   Confirm before submit; on success close dialog, show success, refresh page 50 report.
+--
+-- Dialog: Promotion (EMPLOYEE.UPDATE)
+--   P53_NEW_JOB_ID, P53_NEW_SALARY, P53_EFFECTIVE_DATE, P53_COMMENTS.
+--   Process: PKG_EMPLOYEE.PROMOTE_EMPLOYEE; salary and grade range are validated server-side.
+--   Do not display current salary unless PAYROLL.VIEW is independently authorized.
+--
+-- Dialog: Termination (EMPLOYEE.TERMINATE)
+--   P53_TERMINATION_DATE, P53_REASON, P53_COMMENTS.
+--   Process: PKG_EMPLOYEE.TERMINATE_EMPLOYEE.
+--   Require explicit confirmation and a reason; the package records the lifecycle event.
+--
+-- Dialog: Rehire (EMPLOYEE.UPDATE)
+--   P53_REHIRE_DATE, P53_DEPARTMENT_ID, P53_JOB_ID, P53_BASE_SALARY.
+--   Process: PKG_EMPLOYEE.REHIRE_EMPLOYEE.
+--   Validate active department/job, termination chronology, and salary grade range.
+--   Do not expose rehire controls for non-terminated employees.
+--
+-- No dialog commits directly or updates HRMS tables. Errors use the normalized safe
+-- application messages; failed operations preserve the caller's prior transaction work.
