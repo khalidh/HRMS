@@ -37,11 +37,11 @@ sql -S "$HRMS_DB_CONNECT" \
 
 ## 3. Déployer l’application APEX
 
-Importer l’export APEX installable, puis appliquer les descripteurs page par page selon `apex/application/README.md`. Configurer le protocole SSO retenu pour l’environnement, les rôles, les LOV et les paramètres. Vérifier que les URLs et secrets proviennent de la configuration du workspace, pas du code.
+Importer l’export APEX installable, puis appliquer les descripteurs page par page selon `apex/application/README.md`. Utiliser l’authentification locale APEX temporaire en développement et OIDC en préproduction/production, selon `apex/shared-components/authentication.md`. Configurer les rôles, les LOV et les paramètres. Vérifier que les URLs et secrets proviennent de la configuration du workspace, pas du code.
 
 ## 4. Parcours de recette prioritaires
 
-1. Se connecter via SSO avec un utilisateur employé, manager, RH, paie, administrateur et auditeur.
+1. Se connecter avec les comptes locaux synthétiques en développement, puis via OIDC en préproduction/production, avec un utilisateur employé, manager, RH, paie, administrateur et auditeur.
 2. Vérifier que chaque rôle ne voit que son menu et son périmètre.
 3. Rechercher un employé, effectuer un transfert de test et contrôler l’historique/audit.
 4. Soumettre un congé valide, tenter un chevauchement, puis approuver/rejeter avec un manager.

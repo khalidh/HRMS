@@ -52,7 +52,7 @@ Le journal conserve l’utilisateur legacy, l’identité OIDC (`SSO_SUBJECT`), 
 
 ### Identity and delegated employee scope
 
-`HRMS_USER_IDENTITIES` maps one stable OIDC subject (`SSO_SUBJECT`, configured as the APEX username) to an `EMP_ID`, with `ACTIVE_FLAG`, `VALID_FROM` and `VALID_TO`. `HRMS_EMPLOYEE_SCOPE_DELEGATIONS` stores time-bounded manager scope with `DELEGATOR_EMP_ID`, `DELEGATE_EMP_ID`, `ACTIVE_FLAG`, `VALID_FROM` and `VALID_TO`. T010 creates these security tables; `PKG_APP_CONTEXT` fails closed when the identity mapping is absent or ambiguous.
+`HRMS_USER_IDENTITIES` maps one stable authenticated identity (`SSO_SUBJECT`) to an `EMP_ID`, with `ACTIVE_FLAG`, `VALID_FROM` and `VALID_TO`. In preproduction and production this value is the confirmed stable OIDC subject; development uses an explicitly mapped synthetic local APEX account. `HRMS_EMPLOYEE_SCOPE_DELEGATIONS` stores time-bounded manager scope with `DELEGATOR_EMP_ID`, `DELEGATE_EMP_ID`, `ACTIVE_FLAG`, `VALID_FROM` and `VALID_TO`. T010 creates these security tables; `PKG_APP_CONTEXT` fails closed when the identity mapping is absent or ambiguous.
 
 `HRMS_ROLES`, `HRMS_ACTIONS`, `HRMS_ROLE_ACTIONS` and `HRMS_USER_ROLES` define effective, time-bounded grants. The installation seeds role and action catalogs only: it creates no employee-role assignments or permission grants, so access is denied until an administrator configures them. The base employee view limits employees to the caller's role-specific scope and requires an explicit `EMPLOYEE.VIEW` grant; it omits sensitive personal, payroll, tax and bank columns.
 

@@ -12,7 +12,7 @@ Migrer l’application RH Oracle Forms vers une application web Oracle APEX en c
 
 **Language/Version**: SQL et PL/SQL Oracle ; cible Oracle Database 26ai, compatibilité à vérifier avec les scripts source Oracle 19c ; APEX 26.2 ; ORDS 26.3.
 
-**Primary Dependencies**: Oracle APEX, ORDS, Universal Theme, `DBMS_SCHEDULER`, packages métier HRMS existants, fournisseur SSO OIDC ou SAML, SQL*Plus/SQLcl pour les déploiements.
+**Primary Dependencies**: Oracle APEX, ORDS, Universal Theme, `DBMS_SCHEDULER`, packages métier HRMS existants, comptes locaux APEX temporaires en développement et fournisseur SSO OIDC en préproduction/production, SQL*Plus/SQLcl pour les déploiements.
 
 **Storage**: Schéma Oracle `HRMS` existant, incluant les tables core, paie, congés, performance, audit, notifications, vues et séquences ; tables auxiliaires de suivi de traitements et de migration à ajouter si nécessaire.
 

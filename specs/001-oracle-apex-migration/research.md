@@ -10,11 +10,11 @@
 
 ## Decision 2 — Authentification fédérée et autorisations applicatives séparées
 
-**Decision**: configurer une authentification SSO d’entreprise via OIDC ou SAML, puis mapper l’identité et les groupes/claims vers les profils et périmètres HRMS. Les autorisations doivent être vérifiées côté serveur à chaque page, processus et opération métier.
+**Decision**: utiliser des comptes locaux APEX temporaires et synthétiques en développement, puis OIDC en préproduction et production. Le fournisseur, les issuers et les claims exacts restent à confirmer avec l’IAM. Mapper l’identité vers les profils et périmètres HRMS ; vérifier les autorisations côté serveur à chaque page, processus et opération métier.
 
-**Rationale**: la clarification utilisateur a choisi le SSO. Oracle APEX documente les schémas d’authentification d’instance et les schémas SAML ; l’identité technique ne suffit pas à déterminer le périmètre RH, qui doit être résolu dans les données HRMS.
+**Rationale**: la décision utilisateur réserve les comptes locaux au développement et exige OIDC avant les environnements partagés. L’identité technique ne suffit pas à déterminer le périmètre RH, qui doit être résolu dans les données HRMS.
 
-**Alternatives considered**: comptes locaux APEX ; rejetés comme mode principal à cause de la gestion séparée des mots de passe et du cycle de vie des employés. Un compte de secours administré peut être traité séparément dans la procédure d’exploitation, sans contourner les permissions métier.
+**Alternatives considered**: comptes locaux en préproduction/production ou SAML ; non retenus. Les comptes locaux restent réservés au développement et aucun fournisseur ou fallback n'est activé tant que l’IAM n’a pas confirmé le paramétrage OIDC.
 
 **Source**: [APEX 26.2 Authentication Schemes](https://docs.oracle.com/en/database/oracle/apex/26.2/aeadm/about-configuring-authentication-schemes.html) et [APEX 26.2 Instance Authentication](https://docs.oracle.com/en/database/oracle/apex/26.2/aeadm/configuring-authentication-schemes-for-instance.html).
 
@@ -64,7 +64,7 @@
 
 ## Unknowns resolved
 
-- Authentification : SSO OIDC ou SAML, fournisseur précis à configurer en environnement.
+- Authentification : comptes locaux APEX temporaires en développement et OIDC en préproduction/production ; fournisseur, issuers et claims à confirmer avec l’IAM.
 - Coexistence : exécution parallèle Forms/APEX puis bascule progressive.
 - Historique : tout l’historique disponible et valide.
 - Continuité : RTO 4 heures, RPO 1 heure.

@@ -12,7 +12,7 @@
 
 ### Session 2026-10-27
 
-- Q: Quel mode d’authentification doit être retenu pour les utilisateurs HRMS ? → A: SSO d’entreprise via OIDC ou SAML.
+- Q: Quel mode d’authentification doit être retenu pour les utilisateurs HRMS ? → A initiale : SSO d’entreprise via OIDC ou SAML. Clarification T014 : comptes locaux APEX temporaires en développement et OIDC en préproduction et production ; fournisseur et claims à confirmer avec l’IAM.
 - Q: Quelle stratégie de bascule doit être utilisée entre Oracle Forms et la nouvelle application HRMS ? → A: Migration progressive avec coexistence et exécution parallèle.
 - Q: Quelle profondeur d’historique doit être migrée vers la nouvelle application ? → A: Tout l’historique disponible.
 - Q: Quel niveau de continuité de service et de reprise après incident doit être garanti pour HRMS ? → A: RTO ≤ 4 heures et RPO ≤ 1 heure.
@@ -176,7 +176,7 @@ Un administrateur gère les paramètres, rôles, permissions, notifications, int
 
 - Le schéma Oracle HRMS et les données historiques restent disponibles pendant la phase de migration et de comparaison.
 - Les règles métier valides du système source constituent la référence fonctionnelle, sous réserve de correction des anomalies explicitement acceptées.
-- L’authentification des utilisateurs sera assurée par le SSO d’entreprise via OIDC ou SAML ; les règles de mapping des identités vers les rôles et périmètres HRMS seront définies avant l’implémentation.
+- L’authentification sera locale APEX et temporaire en développement, puis assurée par le SSO d’entreprise via OIDC en préproduction et production ; les règles de mapping des identités vers les rôles et périmètres HRMS seront définies avant l’activation du SSO.
 - Oracle Forms et la nouvelle application pourront fonctionner en coexistence pendant une période de comparaison contrôlée avant la bascule progressive.
 - Toutes les données historiques disponibles et valides seront migrées ; les données invalides ou techniquement non migrables feront l’objet d’un rapport d’anomalies et d’une décision documentée.
 - Les sauvegardes, la supervision et les procédures de reprise seront conçues et testées pour un RTO maximal de quatre heures et un RPO maximal d’une heure.
