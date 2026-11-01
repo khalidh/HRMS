@@ -38,7 +38,9 @@ Table technique pour suivre les traitements longs et idempotents : `BATCH_EXECUT
 
 Les séquences `SEQ_BATCH_EXECUTION` et `SEQ_MIGRATION_RECONCILIATION` génèrent les clés primaires dans `hrms_operational_sequences.sql`. Le script vérifie aussi que les contraintes créées avec les tables sont présentes et activées.
 
-Règles : une clé d’idempotence ne peut être consommée deux fois avec succès ; les transitions sont monotones sauf reprise explicitement autorisée ; chaque échec conserve son code et un résumé assaini, sans secret ni donnée RH sensible.
+`PKG_BATCH` sérialise les demandes concurrentes sur la clé d’idempotence, démarre un nouveau job une seule fois, renvoie l’exécution existante pour une clé déjà active/terminée, et autorise la reprise d’une exécution `FAILED` avec un compteur de tentatives. Seules les transitions `PENDING`/`FAILED` → `RUNNING` → `SUCCEEDED`/`FAILED`/`CANCELLED` sont permises; une annulation reste terminale. Le package ne valide pas la transaction de l’appelant.
+
+Règles : une clé d’idempotence ne peut être consommée deux fois avec succès ; les compteurs entiers de progression ne peuvent diminuer ; chaque échec conserve son code et un résumé assaini, sans secret ni donnée RH sensible.
 
 ### `HRMS.MIGRATION_RECONCILIATIONS`
 
